@@ -7,6 +7,8 @@ require([
     GeoJSONLayer,
     MapView
 ) {
+    $('#add-review-text').hide();
+
     class ParkLayer {
         constructor(name, sql, renderer) {
             this.name = name;
@@ -95,10 +97,10 @@ require([
     const map = new Map({
         basemap: "topo-vector",
         layers: [
-            trailLayer.layer,
-            campingLayer.layer,
-            hikingLayer.layer,
-            overlookLayer.layer,
+            // trailLayer.layer,
+            // campingLayer.layer,
+            // hikingLayer.layer,
+            // overlookLayer.layer,
             picnicLayer.layer,
             reviewLayer.layer
         ]
@@ -110,4 +112,28 @@ require([
         zoom: 9,
         center: [-71.5, 44.1]
     });
+
+
+    // RATING FEATURE
+    // 1- user clicks 'add review' button
+    $('#add-review-button').on('click', function(){
+        // message window appears telling user to click the map
+        document.getElementById('footer').innerHTML = '<p>Click map where you want to review.</p>';
+
+        // user clicks the map and coords are returned
+        view.on(['pointer-down'], function(evt){
+            console.log(evt);
+            let pt = view.toMap({x: evt.x, y: evt.y});
+            let y = pt.latitude.toFixed(7);
+            let x = pt.longitude.toFixed(7);
+            console.log("Clicked location: ", x, y);
+
+            // user enters review information
+            $('#footer').hide();
+            $('#add-review-text').show();
+        });
+    });
+
+    // 5- user clicks submit and review gets added to DB
+    // 6- review gets added to map or map refreshes to show review
 });
