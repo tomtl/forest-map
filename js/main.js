@@ -118,67 +118,49 @@ require([
 
 
     // RATING FEATURE
-    // 1- user clicks 'add review' button
+    // 1. user clicks 'add review' button
     $('#add-review-button').on('click', function(){
         // message window appears telling user to click the map
         document.getElementById('footer').innerHTML = '<p>Click map where you want to review.</p>';
 
-        // validate the form and disable the submit button if not valid
-        (function() {
-          'use strict';
-          window.addEventListener('load', function() {
-            // Fetch all the forms we want to apply custom Bootstrap validation styles to
-            var forms = document.getElementsByClassName('review-form');
-            // Loop over them and prevent submission
-            var validation = Array.prototype.filter.call(forms, function(form) {
-              form.addEventListener('submit', function(event) {
-                if (form.checkValidity() === false) {
-                  event.preventDefault();
-                  event.stopPropagation();
-                }
-                form.classList.add('was-validated');
-              }, false);
-            });
-          }, false);
-        })();
-
-        // user clicks the map and coords are returned
+        // 2. User clicks the map and coords are returned
         view.on(['pointer-down'], function(evt){
-            console.log(evt);
             let pt = view.toMap({x: evt.x, y: evt.y});
             y = pt.latitude.toFixed(7);
             x = pt.longitude.toFixed(7);
-            console.log("Clicked location: ", x, y);
 
-            // user enters review information
+            // 3. User enters review information
             $('#footer').hide();
             $('#viewDiv').css("height", "50%");
             $('#add-review-text').show();
 
-            var form = document.getElementsByClassName('review-form');
-            // form.addEventListener('submit', function(event) {
-
+            // 4. User clicks submit button
+            $('.submit-button').on('click', function(){
+                var form = document.getElementsByClassName('review-form');
+                if (form[0].checkValidity() === true) {
+                    // if user entry is valid then submit review
+                    submitReview();
+                } else {
+                    // if not valid then wait for user to fix it
+                    console.warn('User entry not valid');
+                    $('.review-form').removeAttr('.was-validated');
+                }
+            });
         });
     });
-
-    // 5-
-    // 6- review gets added to map or map refreshes to show review
-
 });
 
 function submitReview(){
-    console.log("Someone clicked it!");
+    // Get the fields needed for adding a review
     var username = document.getElementById("inputName").value;
     var rating = document.getElementById("inputRating").value;
     var review = document.getElementById("inputReview").value;
-    console.log("NAME: ", username);
-    console.log("RATING: ", rating);
-    console.log("REVIEW: ", review);
-    console.log("COORDS: ", x, y);
-    addReview(username, rating, review, y, x);
+    console.log("Submit review: ", username, rating, review, x, y);
+    createReview(username, rating, review, y, x);
 };
 
-function addReview(name, rating, review, latitude, longitude) {
+function createReview(name, rating, review, latitude, longitude) {
+    // Format the review SQL insert statement
     const m = new Date();
     const dateString =
         m.getUTCFullYear() + "-" +
@@ -197,16 +179,19 @@ function addReview(name, rating, review, latitude, longitude) {
     const url = "https://tomtl.carto.com/api/v2/sql"
     const sql = "INSERT INTO wmnf_user_reviews (username, date, rating, review, validated, the_geom) VALUES " + valuesString;
 
-    postUpdate(url, sql);
+    postInsert(url, sql);
 };
 
-function postUpdate(url, sql) {
+function postInsert(url, sql) {
+    // POST the record insert to the database
     $.post( url, {
         q: sql,
         api_key: 'LHES7OUmRgnT6zZVkJFV1w'
         })
         .done(function(data){
+            // If successful then refresh the page
             console.log("data loaded");
+            location.reload();
         })
         .fail(function(data){
             console.error("load failed");
