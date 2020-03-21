@@ -46,7 +46,7 @@ require([
                             { value: 36112, size: 20 },
                             { value: 36112 * 2, size: 16 },
                             { value: 36112 * 8, size: 12 },
-                            { value: 36112 * 32, size: 6 }
+                            { value: 36112 * 32, size: 8 }
                         ]
                     }]
                 }
@@ -85,7 +85,7 @@ require([
                 { value: 36112, size: 16 },
                 { value: 36112 * 2, size: 12 },
                 { value: 36112 * 8, size: 10 },
-                { value: 36112 * 32, size: 4 }
+                { value: 36112 * 32, size: 8 }
             ]
         }]
     };
@@ -125,14 +125,23 @@ require([
 
         // 2. User clicks the map and coords are returned
         view.on(['pointer-down'], function(evt){
-            let pt = view.toMap({x: evt.x, y: evt.y});
-            y = pt.latitude.toFixed(7);
-            x = pt.longitude.toFixed(7);
+            function getCoords(evt, callback) {
+                // Return the coordinates of the clicked location
+                let pt = view.toMap({x: evt.x, y: evt.y});
+                y = pt.latitude.toFixed(7);
+                x = pt.longitude.toFixed(7);
+                setTimeout(() => { callback(); }, 500);
+                ;
+            }
+
+            getCoords(evt, function() {
+                // show user review form
+                $('#footer').hide();
+                $('#viewDiv').css("height", "50%");
+                $('#add-review-text').show();
+            });
 
             // 3. User enters review information
-            $('#footer').hide();
-            $('#viewDiv').css("height", "50%");
-            $('#add-review-text').show();
 
             // 4. User clicks submit button
             $('.submit-button').on('click', function(){
@@ -176,7 +185,7 @@ function createReview(name, rating, review, latitude, longitude) {
 
     const valuesString = "('" + name + "', '" + dateString  + "', " + rating + ", '" + review + "', " + validated + ", " + geom + ")";
 
-    const url = "https://tomtl.carto.com/api/v2/sql"
+    const url = "https://tomtl.carto.com/api/v2/sql";
     const sql = "INSERT INTO wmnf_user_reviews (username, date, rating, review, validated, the_geom) VALUES " + valuesString;
 
     postInsert(url, sql);
