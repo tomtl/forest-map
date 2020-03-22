@@ -100,10 +100,10 @@ require([
     const map = new Map({
         basemap: "topo-vector",
         layers: [
-            // trailLayer.layer,
-            // campingLayer.layer,
-            // hikingLayer.layer,
-            // overlookLayer.layer,
+            trailLayer.layer,
+            campingLayer.layer,
+            hikingLayer.layer,
+            overlookLayer.layer,
             picnicLayer.layer,
             reviewLayer.layer
         ]
@@ -144,7 +144,7 @@ require([
             // 3. User enters review information
 
             // 4. User clicks submit button
-            $('.submit-button').on('click', function(){
+            $('.submit-button').unbind('click').on('click', function(){
                 var form = document.getElementsByClassName('review-form');
                 if (form[0].checkValidity() === true) {
                     // if user entry is valid then submit review
