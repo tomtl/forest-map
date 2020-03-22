@@ -28,7 +28,7 @@ require([
         constructor(name, sql, symbol) {
             super(name, sql);
             this.symbol = symbol;
-            this.url = ("https://tomtl.carto.com/api/v2/sql?format=GeoJSON&q=SELECT fid, the_geom from wmnf_activity_points WHERE marker_activity_group = '" + sql + "'");
+            this.url = ("https://tomtl.carto.com/api/v2/sql?format=GeoJSON&q=SELECT cartodb_id, the_geom from wmnf_activity_points WHERE marker_activity_group = '" + sql + "'");
             this.layer = GeoJSONLayer({
                 title: this.name,
                 url: this.url,
@@ -94,8 +94,8 @@ require([
     const hikingLayer = new ActivityLayer('hiking', 'Hiking', 'trail');
     const overlookLayer = new ActivityLayer('overlook', 'Nature Viewing', 'landmark');
     const picnicLayer = new ActivityLayer('picnic', 'Picnicking', 'restaurant');
-    const trailLayer = new ParkLayer('trails', 'SELECT fid, the_geom from wmnf_trail_lines', trailRenderer);
-    const reviewLayer = new ParkLayer('reviews',  'SELECT fid, the_geom from wmnf_user_reviews', reviewRenderer);
+    const trailLayer = new ParkLayer('trails', 'SELECT cartodb_id, the_geom from wmnf_trail_lines', trailRenderer);
+    const reviewLayer = new ParkLayer('reviews',  'SELECT cartodb_id, the_geom from wmnf_user_reviews', reviewRenderer);
 
     const map = new Map({
         basemap: "topo-vector",
