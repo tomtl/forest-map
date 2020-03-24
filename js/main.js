@@ -94,24 +94,6 @@ require([
         }]
     };
 
-    // var popupTemplate = {
-    //   // autocasts as new PopupTemplate()
-    //   title: "{rec_area_name}",
-    //   content: [{
-    //     // It is also possible to set the fieldInfos outside of the content
-    //     // directly in the popupTemplate. If no fieldInfos is specifically set
-    //     // in the content, it defaults to whatever may be set within the popupTemplate.
-    //     type: "fields",
-    //     fieldInfos: [{
-    //       fieldName: "activity_name",
-    //       label: "Activity"
-    //     },{
-    //       fieldName: "rec_area_description",
-    //       label: "Description",
-    //     }]
-    //   }]
-    // };
-
     const activityPopupTemplate = {
         title: "<b>{rec_area_name}</b>",
         content: "<b>{activity_name}</b> <br> {rec_area_description}... <a href={rec_area_url} target='_blank'> More info</a> <br> <b>Latitude:</b> {latitude} <br> <b>Longitude:</b> {longitude}"
