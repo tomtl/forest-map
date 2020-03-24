@@ -13,25 +13,29 @@ require([
     $('#add-review-text').hide();
 
     class ParkLayer {
-        constructor(name, sql, renderer) {
+        constructor(name, sql, renderer, popupTemplate) {
             this.name = name;
             this.sql = sql;
+            this.popupTemplate = popupTemplate;
             this.url = ("https://tomtl.carto.com/api/v2/sql?format=GeoJSON&q=" + sql);
             this.layer = GeoJSONLayer({
                 url: this.url,
+                popupTemplate: this.popupTemplate,
                 renderer: renderer
             });
         }
     };
 
     class ActivityLayer extends ParkLayer {
-        constructor(name, sql, symbol) {
+        constructor(name, sql, symbol, popupTemplate) {
             super(name, sql);
             this.symbol = symbol;
-            this.url = ("https://tomtl.carto.com/api/v2/sql?format=GeoJSON&q=SELECT fid, the_geom from wmnf_activity_points WHERE marker_activity_group = '" + sql + "'");
+            this.popupTemplate = popupTemplate;
+            this.url = ("https://tomtl.carto.com/api/v2/sql?format=GeoJSON&q=SELECT cartodb_id, rec_area_name, activity_name, rec_area_description, rec_area_url, latitude, longitude, the_geom from wmnf_activity_points WHERE marker_activity_group = '" + sql + "'");
             this.layer = GeoJSONLayer({
                 title: this.name,
                 url: this.url,
+                popupTemplate: this.popupTemplate,
                 renderer: {
                     type: "simple",
                     symbol: {
@@ -90,12 +94,49 @@ require([
         }]
     };
 
-    const campingLayer = new ActivityLayer('camping', 'Camping and Cabins', 'campground');
-    const hikingLayer = new ActivityLayer('hiking', 'Hiking', 'trail');
-    const overlookLayer = new ActivityLayer('overlook', 'Nature Viewing', 'landmark');
-    const picnicLayer = new ActivityLayer('picnic', 'Picnicking', 'restaurant');
-    const trailLayer = new ParkLayer('trails', 'SELECT fid, the_geom from wmnf_trail_lines', trailRenderer);
-    const reviewLayer = new ParkLayer('reviews',  'SELECT fid, the_geom from wmnf_user_reviews', reviewRenderer);
+    // var popupTemplate = {
+    //   // autocasts as new PopupTemplate()
+    //   title: "{rec_area_name}",
+    //   content: [{
+    //     // It is also possible to set the fieldInfos outside of the content
+    //     // directly in the popupTemplate. If no fieldInfos is specifically set
+    //     // in the content, it defaults to whatever may be set within the popupTemplate.
+    //     type: "fields",
+    //     fieldInfos: [{
+    //       fieldName: "activity_name",
+    //       label: "Activity"
+    //     },{
+    //       fieldName: "rec_area_description",
+    //       label: "Description",
+    //     }]
+    //   }]
+    // };
+
+    const activityPopupTemplate = {
+        title: "<b>{rec_area_name}</b>",
+        content: "<b>{activity_name}</b> <br> {rec_area_description}... <a href={rec_area_url} target='_blank'> More info</a> <br> <b>Latitude:</b> {latitude} <br> <b>Longitude:</b> {longitude}"
+    };
+
+    const trailsPopupTemplate = {
+        title: "<b>{trail_name}</b>",
+        content: "<b>Segment length:</b> {segment_length} miles<br><b>Surface:</b> {trail_surface}<br><b>Typical grade:</b> {typical_trail_grade}<br><b>Hiker access:</b> {hiker_pede}"
+    };
+
+    const reviewsPopupTemplate = {
+        title: "<b>Rating: {rating} stars</b>",
+        content: "{review} <br> Reviewed by {username} on {date_text}."
+    };
+
+    const campingLayer = new ActivityLayer('camping', 'Camping and Cabins', 'campground', activityPopupTemplate);
+    const hikingLayer = new ActivityLayer('hiking', 'Hiking', 'trail', activityPopupTemplate);
+    const overlookLayer = new ActivityLayer('overlook', 'Nature Viewing', 'landmark', activityPopupTemplate);
+    const picnicLayer = new ActivityLayer('picnic', 'Picnicking', 'restaurant', activityPopupTemplate);
+
+    const trailSql = 'SELECT cartodb_id, trail_name, segment_length, trail_surface, typical_trail_grade, hiker_pede, the_geom from wmnf_trail_lines';
+    const trailLayer = new ParkLayer('trails', trailSql, trailRenderer, trailsPopupTemplate);
+
+    const reviewSql = "SELECT cartodb_id, username, rating, review, date_part('month', date) || '/' || date_part('day', date) || '/' || date_part('year', date) as date_text, the_geom from wmnf_user_reviews"
+    const reviewLayer = new ParkLayer('reviews',  reviewSql, reviewRenderer, reviewsPopupTemplate);
 
     const map = new Map({
         basemap: "topo-vector",
