@@ -4,11 +4,15 @@ let y = 0;
 require([
     "esri/Map",
     "esri/layers/GeoJSONLayer",
-    "esri/views/MapView"
+    "esri/views/MapView",
+    "esri/widgets/Expand",
+    "esri/widgets/LayerList"
 ], function(
     Map,
     GeoJSONLayer,
-    MapView
+    MapView,
+    Expand,
+    LayerList
 ) {
     $('#add-review-text').hide();
 
@@ -19,6 +23,7 @@ require([
             this.popupTemplate = popupTemplate;
             this.url = ("https://tomtl.carto.com/api/v2/sql?format=GeoJSON&q=" + sql);
             this.layer = GeoJSONLayer({
+                title: this.name,
                 url: this.url,
                 popupTemplate: this.popupTemplate,
                 renderer: renderer
@@ -109,16 +114,16 @@ require([
         content: "{review} <br> Reviewed by {username} on {date_text}."
     };
 
-    const campingLayer = new ActivityLayer('camping', 'Camping and Cabins', 'campground', activityPopupTemplate);
-    const hikingLayer = new ActivityLayer('hiking', 'Hiking', 'trail', activityPopupTemplate);
-    const overlookLayer = new ActivityLayer('overlook', 'Nature Viewing', 'landmark', activityPopupTemplate);
-    const picnicLayer = new ActivityLayer('picnic', 'Picnicking', 'restaurant', activityPopupTemplate);
+    const campingLayer = new ActivityLayer('Camping', 'Camping and Cabins', 'campground', activityPopupTemplate);
+    const hikingLayer = new ActivityLayer('Trail heads', 'Hiking', 'trail', activityPopupTemplate);
+    const overlookLayer = new ActivityLayer('Scenic overlook', 'Nature Viewing', 'landmark', activityPopupTemplate);
+    const picnicLayer = new ActivityLayer('Picnic area', 'Picnicking', 'restaurant', activityPopupTemplate);
 
     const trailSql = 'SELECT cartodb_id, trail_name, segment_length, trail_surface, typical_trail_grade, hiker_pede, the_geom from wmnf_trail_lines';
-    const trailLayer = new ParkLayer('trails', trailSql, trailRenderer, trailsPopupTemplate);
+    const trailLayer = new ParkLayer('Trails', trailSql, trailRenderer, trailsPopupTemplate);
 
     const reviewSql = "SELECT cartodb_id, username, rating, review, date_part('month', date) || '/' || date_part('day', date) || '/' || date_part('year', date) as date_text, the_geom from wmnf_user_reviews"
-    const reviewLayer = new ParkLayer('reviews',  reviewSql, reviewRenderer, reviewsPopupTemplate);
+    const reviewLayer = new ParkLayer('Reviews',  reviewSql, reviewRenderer, reviewsPopupTemplate);
 
     const map = new Map({
         basemap: "topo-vector",
@@ -138,6 +143,29 @@ require([
         zoom: 9,
         center: [-71.5, 44.1]
     });
+
+    // Toggle layers on and off
+    const layerList = new LayerList({
+        view: view,
+        listItemCreatedFunction: function(event) {
+            const item = event.item;
+            if (item.layer.type != "group") {
+                // dont show legend twice
+                item.panel = {
+                    content: "legend",
+                    open: true
+                };
+            }
+        }
+    });
+
+    // Minimize and expand layer toggle
+    const layerListExpand = new Expand({
+        view: view,
+        content: layerList
+    });
+
+    view.ui.add(layerListExpand, "top-left");
 
 
     // RATING FEATURE
