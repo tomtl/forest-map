@@ -194,9 +194,9 @@ require([
             // 3. Query is sent to DB to search for nearby locations
             const url = "https://tomtl.carto.com/api/v2/sql";
             const searchSql = "SELECT DISTINCT cartodb_id, rec_area_name, activity_name, rec_area_description, rec_area_url, latitude,  longitude, the_geom, " +
-                "ST_Distance(loc.the_geom::geography, ST_SetSRID(ST_MakePoint(" + x + ", " + y + "), 4326)::geography) as distance_meters " +
+                "ST_Distance(loc.the_geom::geography, ST_SetSRID(ST_MakePoint(" + x + ", " + y + "), 4326)::geography) /1609.34 as distance_miles " +
                 "FROM wmnf_activity_points as loc " +
-                "WHERE ST_Intersects( ST_Buffer(ST_SetSRID(ST_MakePoint(" + x + ", " + y + "), 4326)::geography, 10000)::geometry, loc.the_geom ) " +
+                "WHERE ST_Intersects( ST_Buffer(ST_SetSRID(ST_MakePoint(" + x + ", " + y + "), 4326)::geography, 10000)::geometry, loc.the_geom )" +
                 "AND marker_activity_group IN ('Camping and Cabins', 'Hiking', 'Nature Viewing', 'Picnicking') " +
                 "ORDER BY 9 LIMIT 20 ";
 
@@ -222,7 +222,7 @@ require([
 
             const resultsPopupTemplate = {
                 title: "<b>{rec_area_name}</b>",
-                content: "<b>{activity_name}</b> <br> {rec_area_description}... <a href={rec_area_url} target='_blank'> More info</a> <br> <b>Latitude:</b> {latitude} <br> <b>Longitude:</b> {longitude} <br> <b>Distance to search origin: </b> {distance_meters} meters",
+                content: "<b>{activity_name}</b> <br> {rec_area_description}... <a href={rec_area_url} target='_blank'> More info</a> <br> <b>Latitude:</b> {latitude} <br> <b>Longitude:</b> {longitude} <br> <b>Distance from search origin: </b> {distance_miles} miles",
                 overwriteActions: true,
                 actions: [{
                     title: "Close",
@@ -236,11 +236,12 @@ require([
 
             view.popup.autoOpenEnabled = false;
             view.popup.collapsed = true;
+            view.popup.dockEnabled = true;
             view.popup.dockOptions = {
-                breakpoint: {
-                    width: 600,
-                    height: 1000
-                },
+                // breakpoint: {
+                //     width: 600,
+                //     height: 1000
+                // },
                 buttonEnabled: "true",
                 position: "bottom-left"
             };
@@ -278,25 +279,7 @@ require([
             view.on(['pointer-down'], function(evt){
                 console.log("Stop searching");
                 evt.stopPropagation();
-                // map.remove(resultsLayer);
             });
-
-            map.on(['pointer-down'], function(evt){
-                console.log("Map click");
-                // evt.stopPropagation();
-                // map.remove(resultsLayer);
-            });
-
-            // $('.esri-icon-close').click(function(event){
-            //     console.log("Close search results");
-            //     map.remove(resultsLayer);
-            //     // evt.stopPropagation();
-            // });
-
-            // $('.esri-icon-close').click(function(event){
-            //     console.log("Exit search");
-            //     map.remove(resultsLayer);
-            // });
         });
     });
 
