@@ -6,13 +6,17 @@ require([
     "esri/layers/GeoJSONLayer",
     "esri/views/MapView",
     "esri/widgets/Expand",
-    "esri/widgets/LayerList"
+    "esri/widgets/LayerList",
+    "esri/widgets/Locate",
+    "esri/widgets/Track"
 ], function(
     Map,
     GeoJSONLayer,
     MapView,
     Expand,
-    LayerList
+    LayerList,
+    Locate,
+    Track
 ) {
     $('#add-review-text').hide();
 
@@ -162,10 +166,27 @@ require([
     // Minimize and expand layer toggle
     const layerListExpand = new Expand({
         view: view,
-        content: layerList
+        content: layerList,
+        expandTooltip: "Choose which layers are displayed"
     });
 
     view.ui.add(layerListExpand, "top-left");
+
+    // LOCATE
+    const locateBtn = new Locate({
+        view: view
+    });
+    view.ui.add(locateBtn, "top-left");
+
+    // TRACK
+    const trackBtn = new Track({
+        view:view
+    });
+    view.ui.add(trackBtn, "top-left");
+
+    view.when(function(){
+        track.start();
+    });
 
     // SEARCH
     view.ui.add("search-button", "top-left");
