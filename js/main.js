@@ -6,13 +6,15 @@ require([
     "esri/layers/GeoJSONLayer",
     "esri/views/MapView",
     "esri/widgets/Expand",
-    "esri/widgets/LayerList"
+    "esri/widgets/LayerList",
+    "esri/widgets/Locate"
 ], function(
     Map,
     GeoJSONLayer,
     MapView,
     Expand,
-    LayerList
+    LayerList,
+    Locate
 ) {
     $('#add-review-text').hide();
 
@@ -166,6 +168,12 @@ require([
     });
 
     view.ui.add(layerListExpand, "top-left");
+
+    // LOCATE
+    const locateBtn = new Locate({
+        view: view
+    });
+    view.ui.add(locateBtn, "top-left");
 
     // SEARCH
     view.ui.add("search-button", "top-left");
