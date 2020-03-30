@@ -29,3 +29,9 @@ body,
     padding: 10px;
     overflow: scroll;
 }
+
+.search-button {
+    position: absolute;
+    top: 60px;
+    right: 10px;
+}

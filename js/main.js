@@ -167,6 +167,94 @@ require([
 
     view.ui.add(layerListExpand, "top-left");
 
+    // SEARCH
+    view.ui.add("search-button", "top-left");
+    // 1. User clicks 'Search' button
+    $('#search-button').on('click', function(){
+        // message window appears telling user to click location on the map
+        document.getElementById('footer').innerHTML = '<p>Click on map where you want to search near.</p>';
+        alert("Click on map where you want to search.");
+
+        // 2. User clicks on the map and the coords are returned
+        view.on(['pointer-down'], function(evt){
+            function getCoords(evt, callback) {
+                // Return the coordinates of the clicked location
+                let pt = view.toMap({x: evt.x, y: evt.y});
+                y = pt.latitude.toFixed(7);
+                x = pt.longitude.toFixed(7);
+                setTimeout(() => { callback(); }, 500);
+                ;
+            }
+
+            getCoords(evt, function() {
+                // show user review form
+                $('#footer').hide();
+            });
+
+            // 3. Query is sent to DB to search for nearby locations
+            const url = "https://tomtl.carto.com/api/v2/sql";
+            const searchSql = "SELECT DISTINCT cartodb_id, rec_area_name, activity_name, rec_area_description, rec_area_url, latitude,  longitude, the_geom, " +
+                "ST_Distance(loc.the_geom::geography, ST_SetSRID(ST_MakePoint(" + x + ", " + y + "), 4326)::geography) /1609.34 as distance_miles " +
+                "FROM wmnf_activity_points as loc " +
+                "WHERE ST_Intersects( ST_Buffer(ST_SetSRID(ST_MakePoint(" + x + ", " + y + "), 4326)::geography, 10000)::geometry, loc.the_geom )" +
+                "AND marker_activity_group IN ('Camping and Cabins', 'Hiking', 'Nature Viewing', 'Picnicking') " +
+                "ORDER BY 9 LIMIT 20 ";
+
+            // 4. Load Results to a layer and add to map
+            const resultsRenderer = {
+                type: "simple",
+                symbol: {
+                    type: "simple-marker",
+                    style: "circle",
+                    color: [0, 0, 0, 0],
+                    outline: { color: "#e6e6e6"}
+                },
+                visualVariables: [{
+                    type: "size",
+                    valueExpression: "$view.scale",
+                    stops: [
+                        { value: 36112, size: 22 },
+                        { value: 36112 * 2, size: 18 },
+                        { value: 36112 * 8, size: 14 },
+                        { value: 36112 * 32, size: 10 }
+                    ]
+                }]
+            };
+
+            const resultsPopupTemplate = {
+                title: "<b>{rec_area_name}</b>",
+                content: "<b>{activity_name}</b> <br> {rec_area_description}... <a href={rec_area_url} target='_blank'> More info</a> <br> <b>Latitude:</b> {latitude} <br> <b>Longitude:</b> {longitude} <br> <b>Distance from search origin: </b> {distance_miles} miles",
+                overwriteActions: true
+            };
+
+            const resultsLayer = new ParkLayer('Results',  searchSql, resultsRenderer, resultsPopupTemplate).layer;
+            map.add(resultsLayer);
+
+            view.popup.autoOpenEnabled = false;
+            view.popup.collapsed = true;
+            view.popup.dockEnabled = true;
+            view.popup.dockOptions = {
+                buttonEnabled: "true",
+                position: "bottom-left"
+            };
+
+            // 5. Show results in a popup that can be clicked through
+            const resultsFeatures = resultsLayer.queryFeatures().then(function(results){
+                view.goTo(results.features).then(function() {
+                    view.popup.open({
+                        features: results.features,
+                        featureMenuOpen: true,
+                        updateLocationEnabled: true
+                    });
+                });
+            });
+
+            view.on(['pointer-down'], function(evt){
+                // If user clicks the map, don't search again
+                evt.stopPropagation();
+            });
+        });
+    });
 
     // RATING FEATURE
     // 1. user clicks 'add review' button
