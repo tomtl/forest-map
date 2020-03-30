@@ -168,10 +168,12 @@ require([
     view.ui.add(layerListExpand, "top-left");
 
     // SEARCH
+    view.ui.add("search-button", "top-left");
     // 1. User clicks 'Search' button
     $('#search-button').on('click', function(){
         // message window appears telling user to click location on the map
         document.getElementById('footer').innerHTML = '<p>Click on map where you want to search near.</p>';
+        alert("Click on map where you want to search.");
 
         // 2. User clicks on the map and the coords are returned
         view.on(['pointer-down'], function(evt){
@@ -187,8 +189,6 @@ require([
             getCoords(evt, function() {
                 // show user review form
                 $('#footer').hide();
-                // $('#viewDiv').css("height", "50%");
-                // $('#add-review-text').show();
             });
 
             // 3. Query is sent to DB to search for nearby locations
@@ -200,13 +200,14 @@ require([
                 "AND marker_activity_group IN ('Camping and Cabins', 'Hiking', 'Nature Viewing', 'Picnicking') " +
                 "ORDER BY 9 LIMIT 20 ";
 
+            // 4. Load Results to a layer and add to map
             const resultsRenderer = {
                 type: "simple",
                 symbol: {
-                    type: "web-style",
-                    styleName: "Esri2DPointSymbolsStyle",
-                    name: "circle-2",
-                    color: "#00e2ff"
+                    type: "simple-marker",
+                    style: "circle",
+                    color: [0, 0, 0, 0],
+                    outline: { color: "#e6e6e6"}
                 },
                 visualVariables: [{
                     type: "size",
@@ -223,12 +224,7 @@ require([
             const resultsPopupTemplate = {
                 title: "<b>{rec_area_name}</b>",
                 content: "<b>{activity_name}</b> <br> {rec_area_description}... <a href={rec_area_url} target='_blank'> More info</a> <br> <b>Latitude:</b> {latitude} <br> <b>Longitude:</b> {longitude} <br> <b>Distance from search origin: </b> {distance_miles} miles",
-                overwriteActions: true,
-                actions: [{
-                    title: "Close",
-                    id: "close",
-                    className: "esri-popup__icon esri-icon-close"
-                }]
+                overwriteActions: true
             };
 
             const resultsLayer = new ParkLayer('Results',  searchSql, resultsRenderer, resultsPopupTemplate).layer;
@@ -238,35 +234,12 @@ require([
             view.popup.collapsed = true;
             view.popup.dockEnabled = true;
             view.popup.dockOptions = {
-                // breakpoint: {
-                //     width: 600,
-                //     height: 1000
-                // },
                 buttonEnabled: "true",
                 position: "bottom-left"
             };
 
-            // Event handler that fires each time an action is clicked.
-            view.popup.on("trigger-action", function(event) {
-                // Execute the measureThis() function if the measure-this action is clicked
-                console.log(event.action.id);
-
-                if (event.action.id === "close") {
-                    console.log("Close search");
-                    map.remove(resultsLayer);
-                    view.popup.close();
-                }
-
-                $('#esri-popup__icon esri-icon-close').click(function(event){
-                    console.log("Exit CLICKED");
-                    map.remove(resultsLayer);
-                    view.popup.close();
-                });
-            });
-
-            // Get the results as features
+            // 5. Show results in a popup that can be clicked through
             const resultsFeatures = resultsLayer.queryFeatures().then(function(results){
-                // Show the results in a popup that the user can progress through
                 view.goTo(results.features).then(function() {
                     view.popup.open({
                         features: results.features,
@@ -277,12 +250,11 @@ require([
             });
 
             view.on(['pointer-down'], function(evt){
-                console.log("Stop searching");
+                // If user clicks the map, don't search again
                 evt.stopPropagation();
             });
         });
     });
-
 
     // RATING FEATURE
     // 1. user clicks 'add review' button
