@@ -40,7 +40,7 @@ require([
             super(name, sql);
             this.symbol = symbol;
             this.popupTemplate = popupTemplate;
-            this.url = ("https://tomtl.carto.com/api/v2/sql?format=GeoJSON&q=SELECT cartodb_id, rec_area_name, activity_name, rec_area_description, rec_area_url, latitude, longitude, the_geom from wmnf_activity_points WHERE marker_activity_group = '" + sql + "'");
+            this.url = ("https://tomtl.carto.com/api/v2/sql?format=GeoJSON&q=SELECT * from wmnf_activity_location_view WHERE marker_activity_group = '" + sql + "'");
             this.layer = GeoJSONLayer({
                 title: this.name,
                 url: this.url,
@@ -105,7 +105,7 @@ require([
 
     const activityPopupTemplate = {
         title: "<b>{rec_area_name}</b>",
-        content: "<b>{activity_name}</b> <br> {rec_area_description}... <a href={rec_area_url} target='_blank'> More info</a> <br> <b>Latitude:</b> {latitude} <br> <b>Longitude:</b> {longitude}"
+        content: "<b>{activity_types}</b> <br> {rec_area_description}... <a href={rec_area_url} target='_blank'> More info</a> <br> <b>Latitude:</b> {latitude} <br> <b>Longitude:</b> {longitude}"
     };
 
     const trailsPopupTemplate = {
@@ -214,11 +214,10 @@ require([
 
             // 3. Query is sent to DB to search for nearby locations
             const url = "https://tomtl.carto.com/api/v2/sql";
-            const searchSql = "SELECT DISTINCT cartodb_id, rec_area_name, activity_name, rec_area_description, rec_area_url, latitude,  longitude, the_geom, " +
+            const searchSql = "SELECT *, " +
                 "ST_Distance(loc.the_geom::geography, ST_SetSRID(ST_MakePoint(" + x + ", " + y + "), 4326)::geography) /1609.34 as distance_miles " +
-                "FROM wmnf_activity_points as loc " +
+                "FROM wmnf_activity_location_view as loc " +
                 "WHERE ST_Intersects( ST_Buffer(ST_SetSRID(ST_MakePoint(" + x + ", " + y + "), 4326)::geography, 10000)::geometry, loc.the_geom )" +
-                "AND marker_activity_group IN ('Camping and Cabins', 'Hiking', 'Nature Viewing', 'Picnicking') " +
                 "ORDER BY 9 LIMIT 20 ";
 
             // 4. Load Results to a layer and add to map
@@ -244,7 +243,7 @@ require([
 
             const resultsPopupTemplate = {
                 title: "<b>{rec_area_name}</b>",
-                content: "<b>{activity_name}</b> <br> {rec_area_description}... <a href={rec_area_url} target='_blank'> More info</a> <br> <b>Latitude:</b> {latitude} <br> <b>Longitude:</b> {longitude} <br> <b>Distance from search origin: </b> {distance_miles} miles",
+                content: "<b>{activity_types}</b> <br> {rec_area_description}... <a href={rec_area_url} target='_blank'> More info</a> <br> <b>Latitude:</b> {latitude} <br> <b>Longitude:</b> {longitude} <br> <b>Distance from search origin: </b> {distance_miles} miles",
                 overwriteActions: true
             };
 
