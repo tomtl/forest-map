@@ -280,7 +280,8 @@ require([
     // 1. user clicks 'add review' button
     $('#add-review-button').on('click', function(){
         // message window appears telling user to click the map
-        document.getElementById('footer').innerHTML = '<p>Click map where you want to review.</p>';
+        // document.getElementById('footer').innerHTML = '<p>Click map where you want to review.</p>';
+        alert("Click on the map where you want to review.");
 
         // 2. User clicks the map and coords are returned
         view.on(['pointer-down'], function(evt){

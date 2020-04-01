@@ -34,6 +34,8 @@ body,
     height: 50%;
     padding: 10px;
     overflow: scroll;
+    background: #daf0e2;
+    font-family: sans-serif;
 }
 
 .search-button {
