@@ -193,7 +193,7 @@ require([
     // 1. User clicks 'Search' button
     $('#search-button').on('click', function(){
         // message window appears telling user to click location on the map
-        document.getElementById('footer').innerHTML = '<p>Click on map where you want to search near.</p>';
+        // document.getElementById('footer').innerHTML = '<p>Click on map where you want to search near.</p>';
         alert("Click on map where you want to search.");
 
         // 2. User clicks on the map and the coords are returned
@@ -209,7 +209,7 @@ require([
 
             getCoords(evt, function() {
                 // show user review form
-                $('#footer').hide();
+                // $('#footer').hide();
             });
 
             // 3. Query is sent to DB to search for nearby locations
@@ -280,7 +280,8 @@ require([
     // 1. user clicks 'add review' button
     $('#add-review-button').on('click', function(){
         // message window appears telling user to click the map
-        document.getElementById('footer').innerHTML = '<p>Click map where you want to review.</p>';
+        // document.getElementById('footer').innerHTML = '<p>Click map where you want to review.</p>';
+        alert("Click on the map where you want to review.");
 
         // 2. User clicks the map and coords are returned
         view.on(['pointer-down'], function(evt){
