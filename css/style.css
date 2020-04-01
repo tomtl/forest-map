@@ -5,14 +5,20 @@ body,
     padding: 0;
     margin: 0;
     width: 100%;
-    height: 80%;
+    height: 90%;
 }
 
 #footer {
     position: fixed;
     bottom: 0;
     width: 100%;
-    height: 20%
+    height: 10%;
+    color: #ffffff;
+    background: #42855A;
+    font-family: serif;
+}
+#footer img {
+    padding: 10px;
 }
 
 .add-review-button {
